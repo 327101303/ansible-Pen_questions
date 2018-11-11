@@ -1,0 +1,34 @@
+- name: group for t2.micro instance
+  ec2_group:
+    name: wenserver
+    description: an example EC2 webserver  group
+    vpc_id: subnet-29e63245
+    ragion: ec2.cn-north-1.amazonaws.com.cn
+    aws_secret_key: SECRET
+    aws_access_key: ACCESS
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 10.0.0.0/8
+      - proto: all
+        from_port: 443
+        to_port: 443
+      - proto: all
+        from_port: 10050
+        to_port: 10050
+        cidr_ip: 10.0.0.0/8
+      - proto: udp
+        from_port: 10051
+        to_port: 10051
+      - proto: icmp
+        from_port: 8 # icmp type, -1 = any type
+        to_port:  -1 # icmp subtype, -1 = any subtype
+        cidr_ip: 10.0.0.0/8
+      - proto: all
+        cidr_ip: 10.0.0.0/8
+

@@ -1,0 +1,37 @@
+- name:   Install prerequisites
+  hosts: 127.0.0.1
+  roles:
+    - iptables # 3.Setting os/firewall
+    - package  # 4.install docker-ce
+
+
+  vars:
+    grep_value: name
+
+  tasks:
+    - name: Create a nginx containeri and started #5.deploy nginx containor
+      docker:
+        name: nginx
+        image: nginx
+        state: started
+        ports:
+         - "80:80"
+    - name: health check #6.run command test nginx containor
+      shell: docker ps -f {{ grep_value }}=nginx|grep -v "CONTAINER ID"|wc -l
+      register: command_result
+      ignore_errors: True
+      failed_when:  command_result.stdout != "1"
+    - name: fetch default page from nginx containor  #7.fetch  default page for the nginx containor
+      get_url:
+        url: http://127.0.0.1:80
+        dest: /tmp/
+    - name: grep count #8.grep and count words,exclude tags,print sort in alphabet order
+      shell: sed -n 's/<[^>]*>//g;p' /tmp/index.html |tr -sc '[:alpha:]'  '[\n*]'|grep -v "^$"|sort |uniq -c |sort -k 2d
+      register: result
+      changed_when: result
+    - name: print result #8.print sort in alphabet order
+      debug: msg={{ result.stdout_lines }}
+    - name: get status $9. Logs the resource usage of the container every 10 seconds
+      get_url:
+        url: http://127.0.0.1:2375/containers/nginx/stats?stream=0
+        dest: /tmp/nginx.status
